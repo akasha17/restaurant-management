@@ -1,0 +1,320 @@
+<?php
+session_start();
+$con = mysqli_connect("localhost", "root", "", "restaurant");
+
+// Check connection
+if($con === false){
+    die("ERROR: Could not connect. " . mysqli_connect_error());
+}
+
+$user_id = $_SESSION['user_id'];
+
+if (isset($user_id)) {
+    // Fetch user details from the customer table
+    $query = "SELECT * FROM customer WHERE customerid = ?";
+    $stmt = mysqli_prepare($con, $query);
+    mysqli_stmt_bind_param($stmt, "i", $user_id);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    if ($row = mysqli_fetch_assoc($result)) {
+        // Store user details in session variables
+        $_SESSION['user_fname'] = $row['fname'];
+        $_SESSION['user_lname'] = $row['lname'];
+        $_SESSION['user_email'] = $row['email'];
+        $_SESSION['user_phone'] = $row['phone'];
+        $_SESSION['user_address'] = $row['address'];
+        $_SESSION['password'] = $row['password'];
+    } else {
+        // Handle if user details not found
+        // Redirect or display an error message
+    }
+
+    mysqli_stmt_close($stmt);
+}
+
+// Handle form submission for updating profile
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['editProfileBtn'])) {
+    $new_fname = $_POST['fname'];
+    $new_lname = $_POST['lname'];
+    $new_email = $_POST['email'];
+    $new_phone = $_POST['phone'];
+    $new_address = $_POST['address'];
+    $new_password = $_POST['password'];
+
+    $update_query = "UPDATE customer SET fname = ?, lname = ?, email = ?, phone = ?, address = ?, password = ? WHERE customerid = ?";
+    $stmt = mysqli_prepare($con, $update_query);
+    mysqli_stmt_bind_param($stmt, "ssssssi", $new_fname, $new_lname, $new_email, $new_phone, $new_address, $new_password, $user_id);
+
+    if (mysqli_stmt_execute($stmt)) {
+        // Update session variables
+        $_SESSION['user_fname'] = $new_fname;
+        $_SESSION['user_lname'] = $new_lname;
+        $_SESSION['user_email'] = $new_email;
+        $_SESSION['user_phone'] = $new_phone;
+        $_SESSION['user_address'] = $new_address;
+        $_SESSION['password'] = $new_password;
+
+      echo "<script>alert('Profile updated successfully.');</script>";
+    } else {
+        echo "<script>alert('ERROR: Could not update profile.');</script>";
+    }
+
+    mysqli_stmt_close($stmt);
+}
+
+mysqli_close($con);
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- basic -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- mobile metas -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <!-- site metas -->
+    <title>Online Management System</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <!-- bootstrap css -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <!-- owl css -->
+    <link rel="stylesheet" href="css/owl.carousel.min.css">
+    <!-- style css -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- responsive-->
+    <link rel="stylesheet" href="css/responsive.css">
+    <!-- awesome fontfamily -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]-->
+    <style type="text/css">
+        /* Center the form horizontally */
+        .container {
+            margin-top: 50px; /* Adjust margin top as needed */
+        }
+
+        /* Style form labels */
+        label {
+            font-weight: bold;
+        }
+
+        /* Style form inputs */
+        .form-control {
+            margin-bottom: 15px; /* Adjust margin bottom as needed */
+            border: 1px solid black;
+        }
+
+        /* Style the edit button */
+        #editProfileBtn {
+            margin-top: 20px; /* Adjust margin top as needed */
+        }
+    </style>
+</head>
+<!-- body -->
+
+<body class="main-layout about_page">
+    <!-- loader  -->
+   <div class="loader_bg">
+        <div class="loader"><img src="images/loading.gif" alt="" /></div>
+    </div>
+
+    <div class="wrapper">
+    <!-- end loader -->
+
+     <div class="sidebar">
+            <!-- Sidebar  -->
+            <nav id="sidebar">
+
+                <div id="dismiss">
+                    <i class="fa fa-arrow-left"></i>
+                </div>
+              
+               
+    <ul class="list-unstyled components -->">
+        <li>
+            <a href="index.php">
+                Home
+            </a>
+        </li>
+        <li>
+            <a href="about.php">About</a>
+        </li>
+        <li>
+            <a href="restaurants_view.php">Restaurants</a>
+        </li>
+        <li>
+            <a href="recipe.php">Recipe</a>
+        </li>
+        <li>
+            <a href="cart.php">Cart</a>
+        </li>
+        <li>
+            <a href="blog.php">Blog</a>
+        </li>
+        <li class="active">
+            <a href="profile_with_paid.php">Profile</a>
+        </li>
+        <li>
+            <a href="contact.php">Contact Us</a>
+        </li>
+ </ul>
+
+            </nav>
+        </div>
+
+    <div id="content">
+    <!-- header -->
+    <header>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-3">
+                   
+                </div>
+                <div class="col-md-9">
+                    <div class="full">
+                        <div class="right_header_info">
+                            <ul>
+                                <li class="dinone">Contact Us : <img style="margin-right: 15px;margin-left: 15px;" src="images/phone_icon.png" alt="#"><a href="#">987-654-3210</a></li>
+                                <li class="dinone"><img style="margin-right: 15px;" src="images/mail_icon.png" alt="#"><a href="#">restaurant@gmail.com</a></li>
+                                <li class="dinone"><img style="margin-right: 15px;height: 21px;position: relative;top: -2px;" src="images/location_icon.png" alt="#"><a href="#">Kerala , India</a></li>
+                                <?php
+                                if (isset($_SESSION['user_id'])) { ?>
+                                    <li class="dinone">
+    <a href="profile.php">
+        <i class="fa fa-user-circle" aria-hidden="true"></i> <!-- Font Awesome user icon -->
+        Welcome, <?php echo $_SESSION['user_name']; ?>!
+    </a>
+</li>
+
+                                    <li class="dinone"><a href="logout.php">Logout</a></li>
+                                <?php } else { ?>
+                                
+                                <li class="button_user"><a class="button" href="sign in.php">Login</a><a class="button" href="sign up.php">Register</a></li>
+                                  <?php } ?>
+                                
+                                <li>
+                                    <button type="button" id="sidebarCollapse">
+                                        <img src="images/menu_icon.png" alt="#">
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+            <!-- end header -->
+
+            <div class="yellow_bg">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="title">
+                                <h2>Profile Page</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- about -->
+            <!-- Display customer information -->
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <form action="" method="POST">
+                            <div class="form-group">
+                                <label for="fname">First Name:</label>
+                                <input type="text" class="form-control" id="fname" name="fname" value="<?php echo $_SESSION['user_fname']; ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="lname">Last Name:</label>
+                                <input type="text" class="form-control" id="lname" name="lname" value="<?php echo $_SESSION['user_lname']; ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email:</label>
+                                <input type="email" class="form-control" id="email" name="email" value="<?php echo $_SESSION['user_email']; ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="phone">Phone:</label>
+                                <input type="text" class="form-control" id="phone" name="phone" value="<?php echo $_SESSION['user_phone']; ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="address">Address:</label>
+                                <input type="text" class="form-control" id="address" name="address" value="<?php echo $_SESSION['user_address']; ?>">
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password:</label>
+                                <input type="text" class="form-control" id="password" name="password" value="<?php echo $_SESSION['password']; ?>">
+                            </div>
+                            <button type="submit" class="btn btn-primary" name="editProfileBtn">Edit Profile</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- end about -->
+
+            <!-- footer -->
+            <footer>
+                <div class="footer">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
+                        <ul class="lik">
+                            <li> <a href="index.php">Home</a></li>
+                            <li> <a href="about.php">About</a></li>
+                            <li> <a href="restaurants_view.php">Restaurants</a></li>
+                            <li> <a href="recipe.php">Recipe</a></li>
+                            <li> <a href="cart.php">Cart</a></li>
+                            <li> <a href="profile_with_paid.php">Profile</a></li>
+                            <li> <a href="blog.php">blog</a></li>
+                            
+                        </ul>
+                    </div>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+            <!-- end footer -->
+
+        </div>
+    </div>
+    <div class="overlay"></div>
+    <!-- Javascript files-->
+    <script src="js/jquery.min.js"></script>
+    <script src="js/popper.min.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script src="js/owl.carousel.min.js"></script>
+    <script src="js/custom.js"></script>
+    <script src="js/jquery.mCustomScrollbar.concat.min.js"></script>
+    <script src="js/jquery-3.0.0.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $("#sidebar").mCustomScrollbar({
+                theme: "minimal"
+            });
+
+            $('#dismiss, .overlay').on('click', function() {
+                $('#sidebar').removeClass('active');
+                $('.overlay').removeClass('active');
+            });
+
+            $('#sidebarCollapse').on('click', function() {
+                $('#sidebar').addClass('active');
+                $('.overlay').addClass('active');
+                $('.collapse.in').toggleClass('in');
+                $('a[aria-expanded=true]').attr('aria-expanded', 'false');
+            });
+        });
+    </script>
+
+</body>
+
+</html>
